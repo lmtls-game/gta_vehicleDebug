@@ -1,0 +1,23 @@
+{
+  "name": "gta_vehicledebug",
+  "version": "1.0.0",
+  "description": "This is a utility for FiveM that allows the live editing of vehicle handling and some basic performance statistic tracking for top speed, acceleration, and deceleration.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lmtls-game/gta_vehicleDebug.git"
+  },
+  "author": "0xWaleed",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lmtls-game/gta_vehicleDebug/issues"
+  },
+  "homepage": "https://github.com/lmtls-game/gta_vehicleDebug#readme",
+  "dependencies": {
+    "xml2js": "^0.4.23"
+  }
+}

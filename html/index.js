@@ -53,6 +53,10 @@ function copyHandling() {
 	post("copyHandling")
 }
 
+function saveHandling() {
+	post("saveHandling")
+}
+
 function updateHandling(key, value) {
 	post("updateHandling", {
 		key: key,

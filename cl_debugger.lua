@@ -149,7 +149,7 @@ function Debugger:SetHandling(key, value)
 	ModifyVehicleTopSpeed(self.vehicle, 1.0)
 end
 
-function Debugger:CopyHandling()
+function Debugger:GenerateAllHandlingAsXML()
 	local text = ""
 
 	-- Line writer.
@@ -164,6 +164,7 @@ function Debugger:CopyHandling()
 	local vehicle = self.vehicle
 	if not DoesEntityExist(vehicle) then return end
 
+	text = '<start>'
 	-- Loop fields.
 	for key, field in pairs(Config.Fields) do
 		-- Get field type.
@@ -173,7 +174,6 @@ function Debugger:CopyHandling()
 		-- Get value.
 		local value = fieldType.getter(vehicle, "CHandlingData", field.name, true)
 		local nValue = tonumber(value)
-
 		-- Append text.
 		if nValue ~= nil then
 			writeLine(("<%s value=\"%s\" />"):format(field.name, field.type == "float" and TruncateNumber(nValue) or nValue))
@@ -181,9 +181,13 @@ function Debugger:CopyHandling()
 			writeLine(("<%s x=\"%s\" y=\"%s\" z=\"%s\" />"):format(field.name, value.x, value.y, value.z))
 		end
 	end
+	text = text .. '</start>'
+	return text
+end
 
+function Debugger:CopyHandling()
 	-- Copy text.
-	self:Invoke("copyText", text)
+	self:Invoke("copyText", self:GenerateAllHandlingAsXML())
 end
 
 function Debugger:Focus(toggle)
@@ -203,6 +207,22 @@ function Debugger:Invoke(_type, data)
 			data = data,
 		},
 	})
+end
+
+function Debugger:SaveHandling()
+	if not self.vehicle then
+		print('No selected vehicle')
+		return
+	end
+
+	local currentVehicle = GetEntityModel(self.vehicle)
+	local vehicleJson = GetLabelText(tostring(currentVehicle))
+	if not vehicleJson then
+		print('Current active vehicle cannot be customized')
+		return
+	end
+	local actualHandlingAsXML = self:GenerateAllHandlingAsXML()
+	TriggerServerEvent('save-handling', vehicleJson, actualHandlingAsXML)
 end
 
 --[[ Threads ]]--
@@ -234,6 +254,12 @@ end)
 RegisterNUICallback("copyHandling", function(data, cb)
 	cb(true)
 	Debugger:CopyHandling()
+end)
+
+
+RegisterNUICallback("saveHandling", function(data, cb)
+	cb(true)
+	Debugger:SaveHandling()
 end)
 
 RegisterNUICallback("resetStats", function(data, cb)
