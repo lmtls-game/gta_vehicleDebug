@@ -17,3 +17,5 @@ client_scripts {
 	'cl_config.lua',
 	'cl_debugger.lua',
 }
+
+server_script 'server.js'

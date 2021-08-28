@@ -12,10 +12,16 @@ function TruncateNumber(value)
 	return (value % 1.0 > 0.5 and math.ceil(value) or math.floor(value)) / Config.Precision
 end
 
+function notify(text)
+	SetNotificationTextEntry("STRING")
+	AddTextComponentString(text)
+	DrawNotification(true, true)
+end
+
 function Debugger:Set(vehicle)
 	self.vehicle = vehicle
 	self:ResetStats()
-	
+
 	local handlingText = ""
 
 	-- Loop fields.
@@ -41,7 +47,7 @@ function Debugger:Set(vehicle)
 			>
 			</input>
 		]]):format(key, value)
-		
+
 		-- Append text.
 		handlingText = handlingText..([[
 			<div class='tooltip'><span class='tooltip-text'>%s</span><span>%s</span>%s</div>
@@ -81,7 +87,7 @@ function Debugger:UpdateAverages()
 
 	-- Get the speed.
 	local speed = GetEntitySpeed(self.vehicle)
-	
+
 	-- Speed buffer.
 	table.insert(self.speedBuffer, speed)
 
@@ -195,7 +201,7 @@ function Debugger:Focus(toggle)
 
 	SetNuiFocus(toggle, toggle)
 	SetNuiFocusKeepInput(toggle)
-	
+
 	self.hasFocus = toggle
 	self:Invoke("setFocus", toggle)
 end
@@ -211,19 +217,27 @@ end
 
 function Debugger:SaveHandling()
 	if not self.vehicle then
-		print('No selected vehicle')
+		notify('No selected vehicle')
 		return
 	end
 
 	local currentVehicle = GetEntityModel(self.vehicle)
 	local vehicleJson = GetLabelText(tostring(currentVehicle))
-	if not vehicleJson then
-		print('Current active vehicle cannot be customized')
+	if vehicleJson == 'NULL' then
+		notify('Current active vehicle cannot be customized')
 		return
 	end
 	local actualHandlingAsXML = self:GenerateAllHandlingAsXML()
+	if not actualHandlingAsXML then
+		notify('There is no active car')
+		return
+	end
 	TriggerServerEvent('save-handling', vehicleJson, actualHandlingAsXML)
 end
+
+RegisterNetEvent('save-handling:result', function(message)
+	notify(message)
+end)
 
 --[[ Threads ]]--
 Citizen.CreateThread(function()
@@ -271,5 +285,16 @@ end)
 RegisterCommand("+vehicleDebug", function()
 	Debugger:Focus(not Debugger.hasFocus)
 end, true)
+
+local carDevToggle
+RegisterCommand("carDev", function()
+	print('Car Dev', carDevToggle)
+	if carDevToggle then
+		Debugger:Invoke('stopHandling')
+	else
+		Debugger:Invoke('startHandling')
+	end
+	carDevToggle = not carDevToggle
+end)
 
 RegisterKeyMapping("+vehicleDebug", "Vehicle Debugger", "keyboard", "lmenu")
