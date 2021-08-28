@@ -1,1 +1,7 @@
 .idea/
+
+node_modules
+/handling.meta.json
+/handling.xml
+/handling-original.xml
+/handlings.json
